@@ -10,8 +10,8 @@
     <script>
 		window.githubLogins.help();
 
-        function saveChanges() {
-			window.students.commit(true);
+        function sendToGithub() {
+			window.students_file.commit(true);
         }
 
 		function addNewLesson() {
@@ -33,7 +33,8 @@
 </head>
 
 <body>
-	<button onclick="saveChanges()">Update Changes</button>
+	<button onclick="sendToGithub()" style="color: red;">Send to GitHub</button>
+	<button onclick="window.tableGen.generateTableContent()">Rerender table</button>
 	<button onclick="addNewLesson()">New Lesson</button>
 	<button onclick="addNewStudent()">New Student</button>
 	<table id="visitTable" class="table"></table>
@@ -46,8 +47,10 @@
 		
 		window.students_file = new GitHubFile("students.json");
 		window.students_file.fetch()
-			.then(() => { window.students = new StudentsData(window.students_file.content) })
 			.then(() => {
+				window.students = new StudentsData(window.students_file.content);
+				window.students_file.content = window.students.students;
+			}).then(() => {
 				window.tableGen = new TableGenerator(window.students, functions, document.getElementById("visitTable"));
 				window.tableGen.generateTableContent();
 			});

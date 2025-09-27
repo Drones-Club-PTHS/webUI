@@ -30,7 +30,7 @@ class Student {
 		this.id = options.id;
 		this.name = options.name || [];
 		this.lessons = options.lessons || {};
-		this.tasks = options.tasks || {};
+		this.tasks = options.tasks || [];
 	}
 	addLesson(date, status) {
 		this.lessons[date] = status;

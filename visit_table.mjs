@@ -177,7 +177,7 @@ function addClickEvent_changeName(cell, row, col) {
 	if (col.type != "name_id" || row.type != "student") { return }
 	const getStudentId = () => { return row.options.student.id }
 	const setStudentId = (id) => { row.options.student.id = id }
-	cell.addEventListener('dblclick', function() {
+	cell.addEventListener("dblclick", function() {
 		let id = prompt(`Для "${row.options.student.id}"\n"Фамилия Имя"\n`);
 		if (id) {
 			row.options.student.id = id;

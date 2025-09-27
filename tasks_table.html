@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset='utf-8'>
+	<title>Drenes club - Tasks table</title>
+	<meta name='viewport' content='width=device-width, initial-scale=1'>
+	<link rel="stylesheet" href="table/table.css">
+	<script src="./github/store_github_logins.mjs"></script>
+    <script>
+		window.githubLogins.help();
+
+        function sendToGithub() {
+			window.students_file.commit(true);
+			window.tasks_file.commit(true);
+        }
+
+		function rerender() {
+			window.studentsTable.tableGenerator.generateTableContent();
+			window.tasksTable.tableGenerator.generateTableContent();
+		}
+
+		function addNewTask() {
+			let id = prompt("Task id:\n");
+			let name = prompt("Task name:\n");
+			if (id && name) {
+				window.tasks.push({"id": id, "name": name});
+				rerender();
+			}
+		}
+    </script>
+	<style>
+		.table {
+			display: inline-block;
+			margin: 1em;
+		}
+		.table td.current_student {
+			color: red;
+		}
+		.table td.title {
+			color: red;
+		}
+	</style>
+</head>
+
+<body>
+	<button onclick="sendToGithub()" style="color: red;">Send to GitHub</button>
+	<button onclick="rerender()">Rerender tables</button>
+	<button onclick="addNewTask()">New Task</button>
+	<br/>
+	<table id="studentsTable" class="table"></table>
+	<table id="tasksTable" class="table"></table>
+	<script type="module">
+		import { GitHubFile } from "./github/github_files.mjs";
+		import { StudentsData } from "./parse_data/students_data.js";
+		import { TableGenerator } from "./table/tableGenerator.mjs";
+		import { studentsTableFunctions, tasksTableFunctions } from "./tasks_table.mjs";
+		
+		
+		window.students_file = new GitHubFile("students.json");
+		window.tasks_file = new GitHubFile("tasks.json");
+		const fetchStudents = window.students_file.fetch().then(() => {
+			window.students = new StudentsData(window.students_file.content);
+			window.students_file.content = window.students.students;
+		})
+		const fetchTasks = window.tasks_file.fetch().then(() => {
+			window.tasks = window.tasks_file.content;
+		});
+
+		Promise.all([
+			fetchStudents,
+			fetchTasks
+		]).then((results) => {
+			window.studentsTable = document.getElementById("studentsTable");
+			window.tasksTable = document.getElementById("tasksTable");
+			window.studentsTable.tableGenerator = new TableGenerator({currentStudent: undefined, students: window.students.students}, studentsTableFunctions, window.studentsTable);
+			window.tasksTable.tableGenerator = new TableGenerator({currentStudent: undefined, tasks: window.tasks}, tasksTableFunctions, window.tasksTable);
+			window.studentsTable.tableGenerator.generateTableContent();
+			window.tasksTable.tableGenerator.generateTableContent();
+		});
+	</script>
+</body>
+
+</html>

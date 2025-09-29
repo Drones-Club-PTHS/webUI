@@ -1,7 +1,6 @@
 .table {
 	border-collapse: collapse;
 	cursor: pointer;
-	user-select: none;
 }
 
 .table th {

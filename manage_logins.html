@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset='utf-8'>
+	<title>Drenes club - Manage Logins</title>
+	<meta name='viewport' content='width=device-width, initial-scale=1'>
+	<link rel="stylesheet" href="table/table.css">
+	<script src="./github/store_github_logins.mjs"></script>
+    <style>
+		.table .localStorage {
+			color: green;
+		}
+		.table .key {
+			font-weight: bold;
+		}
+		.table .loginName {
+			font-size: 1.5em;
+			font-weight: bold;
+		}
+	</style>
+	<script>
+		function newLogin() {
+			const name = prompt("LoginName\n");
+			if (name) {
+				window.logins.addNewEmptyLogin(name);
+			}
+		}
+	</script>
+</head>
+<body>
+	<button onclick="newLogin()">New Login</button>
+	<table id="loginsTable" class="table"></table>
+	<script type="module">
+		import { TableGenerator } from "./table/tableGenerator.mjs";
+		import { functions } from "./manage_logins_table.mjs";
+		import { GithubLogins } from "./manage_logins.mjs";
+
+		window.logins = new GithubLogins();
+		
+		window.loginsTable = document.getElementById("loginsTable");
+		window.loginsTable.tableGenerator = new TableGenerator(window.logins, functions, window.loginsTable);
+		window.loginsTable.tableGenerator.generateTableContent();
+
+		window.logins.onUpdate.push(
+			() => { window.loginsTable.tableGenerator.generateTableContent(); }
+		);
+	</script>
+</body>
+
+</html>

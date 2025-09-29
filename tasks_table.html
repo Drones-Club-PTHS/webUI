@@ -6,13 +6,10 @@
 	<title>Drenes club - Tasks table</title>
 	<meta name='viewport' content='width=device-width, initial-scale=1'>
 	<link rel="stylesheet" href="table/table.css">
-	<script src="./github/store_github_logins.mjs"></script>
     <script>
-		window.githubLogins.help();
-
-        function sendToGithub() {
-			window.students_file.commit(true);
-			window.tasks_file.commit(true);
+        async function sendToGithub() {
+			await window.students_file.commit(true);
+			await window.tasks_file.commit(true);			
         }
 
 		function rerender() {

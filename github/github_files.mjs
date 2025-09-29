@@ -5,19 +5,24 @@ export class GitHubFile {
 		this.filename = filename;
 		this.content = undefined;
 		this.sha = undefined;
-	}
-	checkLogin() {
-		const login = window.githubLogins.getCurrentLogin();
-		if (!login) {
-			throw new Error("Current GithubLogin not set");
-		} else if (!login.getUrl(this.filename)) {
-			throw new Error(`In current GithubLogin no URL for "${this.filename}" file.`);
+		this.login = {
+			get name() { return localStorage.getItem("githubLogin-name") },
+			get email() { return localStorage.getItem("githubLogin-email") },
+			get token() { return localStorage.getItem("githubLogin-token") },
+			get studentsFileUrl() { return localStorage.getItem("githubLogin-studentsFileUrl") },
+			get tasksFileUrl() { return localStorage.getItem("githubLogin-tasksFileUrl") }
 		}
-		return login;
+	}
+	getUrl() {
+		switch (this.filename) {
+			case "students.json":
+				return this.login.studentsFileUrl;
+			case "tasks.json":
+				return this.login.tasksFileUrl;
+		}
 	}
 	async fetch(ifJson=true) {
-		const login = this.checkLogin();
-		const file = await getFile(login.token, login.getUrl(this.filename));
+		const file = await getFile(this.login.token, this.getUrl());
 		if (ifJson) {
 			this.content = JSON.parse(file.content);
 		} else {
@@ -26,14 +31,13 @@ export class GitHubFile {
 		this.sha = file.sha;
 	}
 	async commit(ifJson=true) {
-		const login = this.checkLogin();
 		let data;
 		if (ifJson) {
 			data = JSON.stringify(this.content, null, 2);
 		} else {
 			data = this.content;
 		}
-		const commitPromice = commitFile(login.token, login.name, login.email, login.getUrl(this.filename), data, "Update students.json", this.sha)
+		const commitPromice = commitFile(this.login.token, this.login.name, this.login.email, this.getUrl(), data, "Update students.json", this.sha)
 		commitPromice.then(res => {if (res.content.sha) { this.sha = res.content.sha }});
 		return commitPromice
 	}

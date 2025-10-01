@@ -8,8 +8,8 @@
 	<link rel="stylesheet" href="table/table.css">
     <script>
         async function sendToGithub() {
-			await window.students_file.commit(true);
-			await window.tasks_file.commit(true);			
+			await window.studentsFile.commit(true);
+			await window.tasksFile.commit(true);			
         }
 
 		function rerender() {
@@ -21,7 +21,7 @@
 			let id = prompt("Task id:\n");
 			let name = prompt("Task name:\n");
 			if (id && name) {
-				window.tasks.push({"id": id, "name": name});
+				window.tasksFile.conent.push({"id": id, "name": name});
 				rerender();
 			}
 		}
@@ -53,25 +53,28 @@
 		import { TableGenerator } from "./table/tableGenerator.mjs";
 		import { studentsTableFunctions, tasksTableFunctions } from "./tasks_table.mjs";
 		
+		window.studentsTable = document.getElementById("studentsTable");
+		window.tasksTable = document.getElementById("tasksTable");
 		
-		window.students_file = new GitHubFile("students.json");
-		window.tasks_file = new GitHubFile("tasks.json");
-		const fetchStudents = window.students_file.fetch().then(() => {
-			window.students = new StudentsData(window.students_file.content);
-			window.students_file.content = window.students.students;
+		window.studentsFile = new GitHubFile("students.json");
+		window.tasksFile = new GitHubFile("tasks.json");
+		const fetchStudents = window.studentsFile.fetch().then(() => {
+			window.students = new StudentsData(window.studentsFile);
 		})
-		const fetchTasks = window.tasks_file.fetch().then(() => {
-			window.tasks = window.tasks_file.content;
-		});
+		const fetchTasks = window.tasksFile.fetch();
+
+		window.data = {
+			currentStudent: undefined,
+			get tasks() { return window.tasksFile.content },
+			get studentsData() { return window.students }
+		}
 
 		Promise.all([
 			fetchStudents,
 			fetchTasks
 		]).then((results) => {
-			window.studentsTable = document.getElementById("studentsTable");
-			window.tasksTable = document.getElementById("tasksTable");
-			window.studentsTable.tableGenerator = new TableGenerator({currentStudent: undefined, students: window.students.students}, studentsTableFunctions, window.studentsTable);
-			window.tasksTable.tableGenerator = new TableGenerator({currentStudent: undefined, tasks: window.tasks}, tasksTableFunctions, window.tasksTable);
+			window.studentsTable.tableGenerator = new TableGenerator(window.data, studentsTableFunctions, window.studentsTable);
+			window.tasksTable.tableGenerator = new TableGenerator(window.data, tasksTableFunctions, window.tasksTable);
 			window.studentsTable.tableGenerator.generateTableContent();
 			window.tasksTable.tableGenerator.generateTableContent();
 		});

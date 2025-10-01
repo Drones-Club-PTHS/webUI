@@ -1,13 +1,16 @@
 export class StudentsData {
-	constructor(rawStudentsArray) {
-		// this.rawStudentsArray = rawStudentsArray;
-		this.students = [];
-		rawStudentsArray.forEach(s => {
-			this.students.push(new Student(s))
-		})
+	constructor(githubFile) {
+		this.githubFile = githubFile
 	}
-	addStudent(options) {
-		const student = new Student(options);
+	get students() { return this.githubFile.content }
+	addStudent(id) {
+		const student = {
+			id: id,
+			name: [],
+			lessons: {},
+			tasks:[],
+			git: []
+		};
 		this.students.push(student);
 	}
 	removeStudent(studentLink) {

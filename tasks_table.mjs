@@ -1,28 +1,25 @@
 // STUDENTS TABLE
 
 function generateRowsColumns_studentsTable(data) {
-	// data = {currentStudent: student_link, students: students_array}
 	return {
 		columns: ["column"],
-		rows: data.students
+		rows: data.studentsData.students
 	}
 }
 
 function createCell_studentsTable(data, rows, columns, row_student, col) {
-	// data = {currentStudent: student_link, students: students_array}
 	const cell = document.createElement("td");
 	cell.innerHTML = row_student.id;
 	if (data.currentStudent == row_student) {
 		cell.classList.add("current_student");
 	}
-	addClickEvent_studentsTable(cell, row_student)
+	addClickEvent_studentsTable(cell, data, row_student)
 	return cell;
 }
 
-function addClickEvent_studentsTable(cell, student) {
+function addClickEvent_studentsTable(cell, data, student) {
 	cell.addEventListener("dblclick", () => {
-		window.studentsTable.tableGenerator.data.currentStudent = student;
-		window.tasksTable.tableGenerator.data.currentStudent = student;
+		data.currentStudent = student;
 		window.studentsTable.tableGenerator.generateTableContent();
 		window.tasksTable.tableGenerator.generateTableContent();
 	});
@@ -31,7 +28,6 @@ function addClickEvent_studentsTable(cell, student) {
 // TASKS TABLE
 
 function generateRowsColumns_tasksTable(data) {
-	// data = {currentStudent: student_link, tasks: tasks_array}
 	return {
 		columns: ["N", "name", "status"],
 		rows: ["name", ...data.tasks],
@@ -39,7 +35,6 @@ function generateRowsColumns_tasksTable(data) {
 }
 
 function createCell_tasksTable(data, rows, columns, row_task, col) {
-	// data = {currentStudent: student_link, tasks: tasks_array}
 	const cell = document.createElement("td");
 	if (row_task == "name") {
 		if (col == "N" || col == "status") { return cell }
@@ -54,28 +49,38 @@ function createCell_tasksTable(data, rows, columns, row_task, col) {
 	} else if (col == "status") {
 		if (data.currentStudent == undefined) { cell.innerHTML = ""
 		} else if (data.currentStudent.tasks.includes(row_task.id)) {
-			cell.innerHTML = "+";
+			if (data.currentStudent.git.includes(row_task.id)) {
+				cell.innerHTML = "+";
+			} else {
+				cell.innerHTML = "•";
+			}
 		} else {
-			cell.innerHTML = ""
+			cell.innerHTML = "";
 		}
 		addClickEvent_tasksTable(cell, data.currentStudent, row_task.id);
 	}
 	return cell;
 }
 
+function removeValueFromArray(array, value) {
+	const index = array.indexOf(value);
+	if (index !== -1) {
+		array.splice(index, 1);
+	}
+}
+
 function addClickEvent_tasksTable(cell, student, taskId) {
 	cell.addEventListener("dblclick", () => {
 		if (student.tasks.includes(taskId)) {
-			for (let i=0; i<student.tasks.length; i++) {
-				if (student.tasks[i] == taskId) {
-					student.tasks.splice(i, 1);
-					break;
-				}
+			if (student.git.includes(taskId)) {
+				removeValueFromArray(student.tasks, taskId);
+				removeValueFromArray(student.git, taskId);
+			} else {
+				student.git.push(taskId);
 			}
 		} else {
 			student.tasks.push(taskId);
 		}
-		window.studentsTable.tableGenerator.generateTableContent();
 		window.tasksTable.tableGenerator.generateTableContent();
 	});
 }

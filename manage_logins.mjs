@@ -1,16 +1,13 @@
 export class GithubLogins {
+    // localStorage:
+    //     "githubLogins"
+    //     "githubCurrentLogin"
+    //     "githubCurrentLoginJson"
     constructor() {
 		this.onUpdate = [];
-        if (localStorage.getItem("githubLogins")) {
-            this.logins = JSON.parse(localStorage.getItem("githubLogins"));
-        } else {
-            this.logins = {}
-        }
-        if (localStorage.getItem("githubCurrentLogin")) {
-            this.current = localStorage.getItem("githubCurrentLogin");
-        } else {
-            this.current = undefined;
-        }
+        this.logins = localStorage.getItem("githubLogins") || "{}";
+        this.logins = JSON.parse(this.logins);
+        this.current = localStorage.getItem("githubCurrentLogin");
     }
 	runOnUpdate() {
 		this.onUpdate.forEach(func => { func() });
@@ -18,13 +15,11 @@ export class GithubLogins {
     saveToLocalStorage() {
         localStorage.setItem("githubLogins", JSON.stringify(this.logins));
         localStorage.setItem("githubCurrentLogin", this.current);
-		const login = this.logins[this.current]
-		localStorage.setItem("githubLogin-name", login.name);
-		localStorage.setItem("githubLogin-email", login.email);
-		localStorage.setItem("githubLogin-token", login.token);
-		localStorage.setItem("githubLogin-studentsFileUrl", login.studentsFileUrl);
-		localStorage.setItem("githubLogin-tasksFileUrl", login.tasksFileUrl);
-		this.runOnUpdate();
+        if (this.current in this.logins) {
+            localStorage.setItem("githubCurrentLoginJson", JSON.stringify(this.logins[this.current]));
+        } else {
+            localStorage.removeItem("githubCurrentLoginJson");
+        }
     }
     addNewEmptyLogin(name) {
         if (name in this.logins) {

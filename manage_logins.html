@@ -6,7 +6,6 @@
 	<title>Drenes club - Manage Logins</title>
 	<meta name='viewport' content='width=device-width, initial-scale=1'>
 	<link rel="stylesheet" href="table/table.css">
-	<script src="./github/store_github_logins.mjs"></script>
     <style>
 		.table .localStorage {
 			color: green;
@@ -26,6 +25,16 @@
 				window.logins.addNewEmptyLogin(name);
 			}
 		}
+		function clearLocalStorage() {
+			const githubLogins = localStorage.getItem("githubLogins");
+			const githubCurrentLogin = localStorage.getItem("githubCurrentLogin");
+			const githubCurrentLoginJson = localStorage.getItem("githubCurrentLoginJson");
+			localStorage.clear();
+			localStorage.setItem("githubLogins", githubLogins);
+			localStorage.setItem("githubCurrentLogin", githubCurrentLogin);
+			localStorage.setItem("githubCurrentLoginJson", githubCurrentLoginJson);
+		}
+		clearLocalStorage();
 	</script>
 </head>
 <body>
@@ -42,9 +51,9 @@
 		window.loginsTable.tableGenerator = new TableGenerator(window.logins, functions, window.loginsTable);
 		window.loginsTable.tableGenerator.generateTableContent();
 
-		window.logins.onUpdate.push(
-			() => { window.loginsTable.tableGenerator.generateTableContent(); }
-		);
+		// window.logins.onUpdate.push(
+		// 	() => { window.loginsTable.tableGenerator.generateTableContent(); }
+		// );
 	</script>
 </body>
 

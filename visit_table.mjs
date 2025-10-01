@@ -169,7 +169,7 @@ function addClickEvent_switchVisits(cell, row, col) {
 				setVisitStatus("");
 				break;
 		}
-		window.tableGen.generateTableContent();
+		window.visitTable.tableGenerator.generateTableContent();
 	});
 }
 
@@ -181,7 +181,7 @@ function addClickEvent_changeName(cell, row, col) {
 		let id = prompt(`Для "${row.options.student.id}"\n"Фамилия Имя"\n`);
 		if (id) {
 			row.options.student.id = id;
-			window.tableGen.generateTableContent();
+			window.visitTable.tableGenerator.generateTableContent();
 		}
 	});
 }

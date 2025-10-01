@@ -1,12 +1,6 @@
 function generateRowsColumns(data) {
 	const rows = [];
-	["githubCurrentLogin",
-		"githubLogin-name",
-		"githubLogin-email",
-		"githubLogin-token",
-		"githubLogin-studentsFileUrl",
-		"githubLogin-tasksFileUrl"
-	].forEach(item => { rows.push({
+	["githubCurrentLogin", "githubCurrentLoginJson"].forEach(item => { rows.push({
 		loginName: undefined,
 		key: item,
 		value: localStorage.getItem(item),
@@ -48,10 +42,9 @@ function createCell(data, rows, columns, row, col) {
 			cell.classList.add("value");
 			if (row.loginName != undefined) {
 				addClickEvent_value(cell, row.loginName, row.key, row.value)
-			} else {
-				addClickEvent_localStorage(cell, row.key)
+			} else if (row.key == "githubCurrentLogin") {
+				addClickEvent_currentLogin(cell);
 			}
-			
 		}
 	}
 	if (row.loginName == undefined) {
@@ -66,19 +59,17 @@ function addClickEvent_value(cell, loginName, key, value) {
 		if (newValue) {
 			window.logins.updateLogin(loginName, key, newValue);
 		}
+		window.loginsTable.tableGenerator.generateTableContent();
 	});
 }
 
-function addClickEvent_localStorage(cell, field) {
+function addClickEvent_currentLogin(cell) {
 	cell.addEventListener("dblclick", () => {
-		let newValue = prompt(`Старое значение:\n${localStorage.getItem(field)}\nНовое значение:\n`);
+		let newValue = prompt(`githubCurrentLogin:\n${localStorage.getItem("githubCurrentLogin")}\nНовое значение:\n`);
 		if (newValue) {
-			if (field == "githubCurrentLogin") {
-				window.logins.setCurrentLogin(newValue);
-			} else {
-				localStorage.setItem(field, newValue);
-			}
+			window.logins.setCurrentLogin(newValue);
 		}
+		window.loginsTable.tableGenerator.generateTableContent();
 	});
 }
 

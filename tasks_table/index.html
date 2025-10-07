@@ -8,8 +8,24 @@
 	<link rel="stylesheet" href="../0_table/table.css">
     <script>
         async function sendToGithub() {
-			await window.studentsFile.commit(true);
-			await window.tasksFile.commit(true);			
+			const status = document.getElementById("sendGithubStatus");
+			status.innerHTML = "--";
+			const resStudents = await window.studentsFile.commit(true);
+			const resTasks = await window.tasksFile.commit(true);
+			let ok = true;
+			if (!resStudents.commit) {
+				console.error("Commit ERROR", resStudents);
+				ok = false;			
+			}
+			if (!resTasks.commit) {
+				console.error("Commit ERROR", resTasks);
+				ok = false;			
+			}
+			if (ok) {
+				status.innerHTML = "Ok";
+			} else {
+				status.innerHTML = ":(";
+			}	
         }
 
 		function rerender() {
@@ -38,10 +54,17 @@
 			color: red;
 		}
 	</style>
+	<style>
+		#sendGithubStatus {
+			display: inline-block;
+			width: 2em;
+		}
+	</style>
 </head>
 
 <body>
 	<button onclick="sendToGithub()" style="color: red;">Send to GitHub</button>
+	<div id="sendGithubStatus">--</div>
 	<button onclick="rerender()">Rerender tables</button>
 	<button onclick="addNewTask()">New Task</button>
 	<br/>

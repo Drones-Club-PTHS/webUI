@@ -38,7 +38,7 @@ export class GitHubFile {
 		}
 		const login = this.getLogin();
 		const commitPromice = commitFile(login.token, login.name, login.email, this.getUrl(), data, "Update students.json", this.sha)
-		commitPromice.then(res => {if (res.content.sha) { this.sha = res.content.sha }});
+		commitPromice.then(res => {if (res?.content?.sha) { this.sha = res.content.sha }});
 		return commitPromice
 	}
 	async updateSha() {

@@ -6,9 +6,23 @@
 	<title>Drenes club - Visit table</title>
 	<meta name='viewport' content='width=device-width, initial-scale=1'>
 	<link rel="stylesheet" href="../0_table/table.css">
-    <script>
-        function sendToGithub() {
-			window.studentsFile.commit(true);
+    <style>
+		#sendGithubStatus {
+			display: inline-block;
+			width: 2em;
+		}
+	</style>
+	<script>
+        async function sendToGithub() {
+			const status = document.getElementById("sendGithubStatus");
+			status.innerHTML = "--";
+			const res = await window.studentsFile.commit(true);
+			if (res.commit) {
+				status.innerHTML = "Ok";
+			} else {
+				console.error("Commit ERROR", res)
+				status.innerHTML = ":(";
+			}
         }
 
 		function addNewLesson() {
@@ -42,6 +56,7 @@
 
 <body>
 	<button onclick="sendToGithub()" style="color: red;">Send to GitHub</button>
+	<div id="sendGithubStatus">--</div>
 	<button onclick="window.visitTable.tableGenerator.generateTableContent();">Rerender table</button>
 	<button onclick="addNewLesson()">New Lesson</button>
 	<button onclick="addNewLessonToday()">New Lesson (today)</button>

@@ -10,4 +10,9 @@
 .table td {
 	border: 1px solid black;
 	padding-inline: 0.5em;
+	
+	&:focus {
+		outline: auto;
+	}
 }
+

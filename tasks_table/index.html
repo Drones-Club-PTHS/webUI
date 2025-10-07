@@ -5,7 +5,7 @@
 	<meta charset='utf-8'>
 	<title>Drenes club - Tasks table</title>
 	<meta name='viewport' content='width=device-width, initial-scale=1'>
-	<link rel="stylesheet" href="table/table.css">
+	<link rel="stylesheet" href="../0_table/table.css">
     <script>
         async function sendToGithub() {
 			await window.studentsFile.commit(true);
@@ -47,15 +47,37 @@
 	<br/>
 	<table id="studentsTable" class="table"></table>
 	<table id="tasksTable" class="table"></table>
-	<script type="module">
-		import { GitHubFile } from "./github/github_files.mjs";
-		import { StudentsData } from "./parse_data/students_data.js";
-		import { TableGenerator } from "./table/tableGenerator.mjs";
-		import { studentsTableFunctions, tasksTableFunctions } from "./tasks_table.mjs";
-		
+	<script>
 		window.studentsTable = document.getElementById("studentsTable");
 		window.tasksTable = document.getElementById("tasksTable");
+
+		window.addEventListener("keydown", (event) => {
+			switch (event.key) {
+				case "ArrowLeft":
+					if (window.studentsTable.querySelector("td.current_student")) {
+						window.studentsTable.querySelector("td.current_student").focus();
+					} else {
+						window.studentsTable.firstChild.click();
+					}
+					break;
+				case "ArrowRight":
+					window.tasksTable.lastChild.click();
+					break;
+			}
+		});
+	</script>
+	<script type="module">
+		import { GitHubFile } from "../0_github/github_files.mjs";
+		import { StudentsData } from "../0_parse_data/students_data.js";
+		import { TableGenerator } from "../0_table/tableGenerator.mjs";
+		import * as taskTableFunctions from "./tasks_table.mjs";
+		import * as studentsTableFunctions from "./students_table.mjs";
 		
+		window.tasksTable.addEventListener("click", taskTableFunctions.tableClickEvent);
+		window.tasksTable.addEventListener("keydown", taskTableFunctions.keyEvent);
+		window.studentsTable.addEventListener("click", studentsTableFunctions.tableClickEvent);
+		window.studentsTable.addEventListener("keydown", studentsTableFunctions.keyEvent);
+
 		window.studentsFile = new GitHubFile("students.json");
 		window.tasksFile = new GitHubFile("tasks.json");
 		const fetchStudents = window.studentsFile.fetch().then(() => {
@@ -73,8 +95,8 @@
 			fetchStudents,
 			fetchTasks
 		]).then((results) => {
-			window.studentsTable.tableGenerator = new TableGenerator(window.data, studentsTableFunctions, window.studentsTable);
-			window.tasksTable.tableGenerator = new TableGenerator(window.data, tasksTableFunctions, window.tasksTable);
+			window.studentsTable.tableGenerator = new TableGenerator(window.data, studentsTableFunctions.functions, window.studentsTable);
+			window.tasksTable.tableGenerator = new TableGenerator(window.data, taskTableFunctions.functions, window.tasksTable);
 			window.studentsTable.tableGenerator.generateTableContent();
 			window.tasksTable.tableGenerator.generateTableContent();
 		});

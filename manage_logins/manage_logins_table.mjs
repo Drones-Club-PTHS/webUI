@@ -1,4 +1,4 @@
-function generateRowsColumns(data) {
+function generateRowsColumns(table, data) {
 	const rows = [];
 	["githubCurrentLogin", "githubCurrentLoginJson"].forEach(item => { rows.push({
 		loginName: undefined,
@@ -26,7 +26,7 @@ function generateRowsColumns(data) {
 	}
 }
 
-function createCell(data, rows, columns, row, col) {
+function createCell(table, data, rows, columns, row, col) {
 	const cell = document.createElement("td");
 	if (col == "key") {
 		if (row.title) {
@@ -76,7 +76,7 @@ function addClickEvent_currentLogin(cell) {
 // MAIN
 const functions = {
 	generateRowsColumns: generateRowsColumns,
-	createRow: (data, rows, columns, row) => {return document.createElement("tr")},
+	createRow: (table, data, rows, columns, row) => {return document.createElement("tr")},
 	createCell: createCell
 }
 

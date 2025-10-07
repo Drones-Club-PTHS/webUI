@@ -62,7 +62,7 @@ function generateColumns(lessonsArray) {
 	return columns;
 }
 
-function generateRowsColumns(data) {
+function generateRowsColumns(table, data) {
 	return {
 		rows: generateRows(data),
 		columns: generateColumns(createLessonsArray(data))
@@ -107,12 +107,13 @@ function createHeaderMonth(row, col){
 
 // CREATE CELLS/ROWS
 
-function createRow(data, rows, columns, row) {
+function createRow(table, data, rows, columns, row) {
 	return document.createElement("tr");
 }
 
 function createVisitCell(row, col) {
 	const cell = document.createElement("td");
+	cell.setAttribute('tabindex', '0');
 	const date = col.options.date;
 	const lessons = row.options.student.lessons;
 	if (!(date in lessons)) { cell.innerHTML = "×" }
@@ -129,7 +130,7 @@ function createNameCell(row, col) {
 	return cell;
 }
 
-function createCell(data, rows, columns, row, col) {
+function createCell(table, data, rows, columns, row, col) {
 	if (row.type == "header-months") {
 		return createHeaderMonth(row, col, columns)
 	} else if (row.type == "header-date") {
@@ -137,11 +138,11 @@ function createCell(data, rows, columns, row, col) {
 	} else if (row.type == "student") {
 		if (col.type == "name_id") {
 			const cell = createNameCell(row, col);
-			addClickEvent_changeName(cell, row, col);
+			addClickEvent_changeName(cell, table, row, col);
 			return cell
 		} else if (col.type == "lesson") {
 			const cell = createVisitCell(row, col);
-			addClickEvent_switchVisits(cell, row, col);
+			addClickEvent_switchVisits(cell, table, row, col);
 			return cell;
 		}
 	}
@@ -150,7 +151,7 @@ function createCell(data, rows, columns, row, col) {
 
 // ADD EVENTS
 
-function addClickEvent_switchVisits(cell, row, col) {
+function addClickEvent_switchVisits(cell, table, row, col) {
 	if (col.type != "lesson" || row.type != "student") { return }
 	const getVisitStatus = () => { return row.options.student.lessons[col.options.date] }
 	const setVisitStatus = (status) => { row.options.student.lessons[col.options.date] = status }
@@ -169,11 +170,11 @@ function addClickEvent_switchVisits(cell, row, col) {
 				setVisitStatus("");
 				break;
 		}
-		window.visitTable.tableGenerator.generateTableContent();
+		table.tableGenerator.generateTableContent();
 	});
 }
 
-function addClickEvent_changeName(cell, row, col) {
+function addClickEvent_changeName(cell, table, row, col) {
 	if (col.type != "name_id" || row.type != "student") { return }
 	const getStudentId = () => { return row.options.student.id }
 	const setStudentId = (id) => { row.options.student.id = id }
@@ -181,7 +182,7 @@ function addClickEvent_changeName(cell, row, col) {
 		let id = prompt(`Для "${row.options.student.id}"\n"Фамилия Имя"\n`);
 		if (id) {
 			row.options.student.id = id;
-			window.visitTable.tableGenerator.generateTableContent();
+			table.tableGenerator.generateTableContent();
 		}
 	});
 }

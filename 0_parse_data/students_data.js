@@ -23,7 +23,7 @@ export class StudentsData {
 	}
 	addNewLesson(date) {
 		this.students.forEach(
-			student => { student.addLesson(date, "") }
+			student => { student.lessons[date] = "" }
 		);
 	}
 }

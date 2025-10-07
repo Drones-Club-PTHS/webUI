@@ -14,16 +14,16 @@
 		function addNewLesson() {
 			let date = prompt("Lesson full date\n(example, \"01.01.2001\")\n");
 			if (date) {
-				window.tableGen.data.addNewLesson(date);
-				window.tableGen.generateTableContent();
+				window.students.addNewLesson(date)
+				window.visitTable.tableGenerator.generateTableContent();
 			}
 		}
 
 		function addNewStudent() {
 			let id = prompt("\"Фамилия Имя\"\n");
 			if (id) {
-				window.tableGen.data.addStudent({id: id});
-				window.tableGen.generateTableContent();
+				window.students.addStudent(id);
+				window.visitTable.tableGenerator.generateTableContent();
 			}
 		}
     </script>
@@ -31,7 +31,7 @@
 
 <body>
 	<button onclick="sendToGithub()" style="color: red;">Send to GitHub</button>
-	<button onclick="window.tableGen.generateTableContent()">Rerender table</button>
+	<button onclick="window.visitTable.tableGenerator.generateTableContent();">Rerender table</button>
 	<button onclick="addNewLesson()">New Lesson</button>
 	<button onclick="addNewStudent()">New Student</button>
 	<table id="visitTable" class="table"></table>

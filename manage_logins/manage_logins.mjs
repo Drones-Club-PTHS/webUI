@@ -5,8 +5,10 @@ export class GithubLogins {
     //     "githubCurrentLoginJson"
     constructor() {
 		this.onUpdate = [];
-        this.logins = localStorage.getItem("githubLogins") || "{}";
-        this.logins = JSON.parse(this.logins);
+        this.logins = JSON.parse(localStorage.getItem("githubLogins"));
+		if (!this.logins) {
+			this.logins = {}
+		}
         this.current = localStorage.getItem("githubCurrentLogin");
     }
 	runOnUpdate() {

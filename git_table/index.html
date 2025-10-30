@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset='utf-8'>
+	<title>Drenes club - Visit table</title>
+	<meta name='viewport' content='width=device-width, initial-scale=1'>
+	<link rel="stylesheet" href="../0_table/table.css">
+	<style>
+		#sendGithubStatus {
+			display: inline-block;
+			width: 2em;
+		}
+	</style>
+	<script>
+		async function sendToGithub() {
+			const status = document.getElementById("sendGithubStatus");
+			status.innerHTML = "--";
+			const res = await window.studentsFile.commit(true);
+			if (res.commit) {
+				status.innerHTML = "Ok";
+			} else {
+				console.error("Commit ERROR", res)
+				status.innerHTML = ":(";
+			}
+		}
+	</script>
+</head>
+
+<body>
+	<button onclick="sendToGithub()" style="color: red;">Send to GitHub</button>
+	<div id="sendGithubStatus">--</div>
+	<table id="gitTable" class="table"></table>
+	<script type="module">
+		import { GitHubFile } from "../0_github/github_files.mjs";
+		import { StudentsData } from "../0_parse_data/students_data.js";
+		import { TableGenerator } from "../0_table/tableGenerator.mjs";
+		import { functions } from "./git_table.mjs";
+		
+		window.gitTable = document.getElementById("gitTable");
+		window.studentsFile = new GitHubFile("students.json");
+		window.students = new StudentsData(window.studentsFile);
+
+		window.studentsFile.fetch()
+			.then(() => {
+				window.gitTable.tableGenerator = new TableGenerator(window.students, functions, document.getElementById("gitTable"));
+				window.gitTable.tableGenerator.generateTableContent();
+			});
+	</script>
+</body>
+
+</html>

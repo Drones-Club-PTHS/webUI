@@ -6,8 +6,8 @@
 	<title>Drenes club - Tasks table</title>
 	<meta name='viewport' content='width=device-width, initial-scale=1'>
 	<link rel="stylesheet" href="../0_table/table.css">
-    <script>
-        async function sendToGithub() {
+	<script>
+		async function sendToGithub() {
 			const status = document.getElementById("sendGithubStatus");
 			status.innerHTML = "--";
 			const resStudents = await window.studentsFile.commit(true);
@@ -26,7 +26,7 @@
 			} else {
 				status.innerHTML = ":(";
 			}	
-        }
+		}
 
 		function rerender() {
 			window.studentsTable.tableGenerator.generateTableContent();
@@ -41,7 +41,7 @@
 				rerender();
 			}
 		}
-    </script>
+	</script>
 	<style>
 		.table {
 			display: inline-block;

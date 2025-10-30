@@ -6,14 +6,14 @@
 	<title>Drenes club - Visit table</title>
 	<meta name='viewport' content='width=device-width, initial-scale=1'>
 	<link rel="stylesheet" href="../0_table/table.css">
-    <style>
+	<style>
 		#sendGithubStatus {
 			display: inline-block;
 			width: 2em;
 		}
 	</style>
 	<script>
-        async function sendToGithub() {
+		async function sendToGithub() {
 			const status = document.getElementById("sendGithubStatus");
 			status.innerHTML = "--";
 			const res = await window.studentsFile.commit(true);
@@ -23,7 +23,7 @@
 				console.error("Commit ERROR", res)
 				status.innerHTML = ":(";
 			}
-        }
+		}
 
 		function addNewLesson() {
 			let date = prompt("Lesson full date\n(example, \"01.01.2001\")\n");
@@ -51,7 +51,7 @@
 				window.visitTable.tableGenerator.generateTableContent();
 			}
 		}
-    </script>
+	</script>
 </head>
 
 <body>

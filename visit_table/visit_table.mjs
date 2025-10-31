@@ -46,7 +46,7 @@ function generateRows(data) {
 		new RowColumn("header-date"),
 	]
 	for (const s of data.students) {
-		rows.push(new RowColumn("student", "", {student: s}));
+		rows.push(new RowColumn("student", "", {student: s, rows: rows}));
 	}
 	return rows;
 }
@@ -71,21 +71,19 @@ function generateRowsColumns(table, data) {
 
 // CREATE HEADERS
 
-function createHeaderDate(row, col) {
-	const cell = document.createElement("th");
-	cell.innerHTML = col.title;
-	return cell;
+function configHeaderDate(cell) {
+	cell.innerHTML = cell.col.title;
 }
 
-function createHeaderMonth(row, col){
-	if (col.type != "lesson") { return document.createElement("th") }
+function configHeaderMonth(cell){
+	if (cell.col.type != "lesson") { return true; }
 	function getMonth(date) { return date.split(".")[1] };
-	const month = getMonth(col.options.date);
+	const month = getMonth(cell.col.options.date);
 	let currentMonth = undefined;
-	const columns = col.options.columns;
+	const columns = cell.col.options.columns;
 	for (let i = 0; i < columns.length; i++) {
-		if (col == columns[i]) {
-			if (month == currentMonth) { return }
+		if (cell.col == columns[i]) {
+			if (month == currentMonth) { return false; }
 			let counter = 0;
 			for (let j = i; j < columns.length; j++) {
 				if (getMonth(columns[j].options.date) == month) {
@@ -94,10 +92,9 @@ function createHeaderMonth(row, col){
 					break
 				}
 			}
-			const cell = document.createElement("th");
 			cell.colSpan = counter;
 			cell.innerHTML = monthsNames[month];
-				return cell;
+				return true;
 		}
 		if (columns[i].type == "lesson") {
 			currentMonth = getMonth(columns[i].options.date);
@@ -108,89 +105,143 @@ function createHeaderMonth(row, col){
 // CREATE CELLS/ROWS
 
 function createRow(table, data, rows, columns, row) {
-	return document.createElement("tr");
+	const rowElement = document.createElement("tr");
+	rowElement.row = row;
+	row.rowCell = rowElement;
+	return rowElement
 }
 
-function createVisitCell(row, col) {
-	const cell = document.createElement("td");
+function configVisitCell(cell) {
 	cell.setAttribute('tabindex', '0');
-	const date = col.options.date;
-	const lessons = row.options.student.lessons;
+	setVisitCellContent(cell);
+}
+
+function setVisitCellContent(cell) {
+	const date = cell.col.options.date
+	const lessons = cell.row.options.student.lessons;
 	if (!(date in lessons)) { cell.innerHTML = "×" }
 	else if (lessons[date] == "") { cell.innerHTML = "" }
 	else if (lessons[date] == "visit") { cell.innerHTML = "+" }
 	else if (lessons[date] == "absent") { cell.innerHTML = "-" }
-	else { cell.innerHTML = "?" }
-	return cell;
+	else { cell.innerHTML = "?"}
 }
 
-function createNameCell(row, col) {
-	const cell = document.createElement("td");
-	cell.innerHTML = row.options.student.id;
-	return cell;
+function setNameCellContent(cell) {
+	cell.innerHTML = cell.row.options.student.id;
 }
 
 function createCell(table, data, rows, columns, row, col) {
+	let cell;
+	if (row.type == "header-date" || row.type == "header-date") {
+		cell = document.createElement("th");
+	} else {
+		cell = document.createElement("td");
+	}
+	cell.row = row;
+	cell.col = col;
 	if (row.type == "header-months") {
-		return createHeaderMonth(row, col, columns)
+		if (!configHeaderMonth(cell)) {cell = undefined};
 	} else if (row.type == "header-date") {
-		return createHeaderDate(row, col);
+		configHeaderDate(cell);
 	} else if (row.type == "student") {
 		if (col.type == "name_id") {
-			const cell = createNameCell(row, col);
-			addClickEvent_changeName(cell, table, row, col);
-			return cell
+			setNameCellContent(cell);
+			cell.cellAction = studentNameCellAction;
 		} else if (col.type == "lesson") {
-			const cell = createVisitCell(row, col);
-			addClickEvent_switchVisits(cell, table, row, col);
-			return cell;
+			configVisitCell(cell);
+			cell.cellAction = visitCellAction;
+		}
+		cell.addEventListener("dblclick", cell.cellAction);
+	}
+	return cell;
+}
+
+// EVENTS
+
+function studentNameCellAction() {
+	let id = prompt(`Для "${this.row.options.student.id}"\n"Фамилия Имя"\n`);
+	if (id) {
+		this.row.options.student.id = id;
+		setNameCellContent(this);
+	}
+}
+
+function visitCellAction() {
+	const getVisitStatus = () => { return this.row.options.student.lessons[this.col.options.date] }
+	const setVisitStatus = (status) => { this.row.options.student.lessons[this.col.options.date] = status }
+	switch (getVisitStatus()) {
+		case "":
+			setVisitStatus("visit");
+			break;
+		case "visit":
+			setVisitStatus("absent");
+			break;
+		case "absent":
+			setVisitStatus("");
+			break;
+		default:
+			setVisitStatus("");
+			break;
+	}
+	setVisitCellContent(this);
+}
+
+function keyEvent(event) {
+	switch (event.key) {
+		case "Enter": 
+			event.target?.cellAction();
+			break;
+		case "ArrowUp":
+			setFocus("up");
+			break;
+		case "ArrowDown":
+			setFocus("down");
+			break;
+		case "ArrowRight":
+			setFocus("right");
+			break;
+		case "ArrowLeft":
+			setFocus("left");
+			break;
+	}
+}
+
+function setFocus(direction) {
+	const cell = document.activeElement;
+	if (!(cell.col && cell.row)) { return }
+	const rows = cell.row.options.rows;
+	const columns = cell.col.options.columns;
+	if (direction == "up" || direction == "down") {
+		let i = rows.indexOf(cell.row);
+		if (direction == "down") { i = i+1 } else { i = i-1 }
+		if (!rows[i]) {return}
+		if (rows[i].type != "student") {return}
+		for (const newCell of rows[i].rowCell.children) {
+			if (newCell.col == cell.col) {
+				newCell.focus();
+				return;
+			}
+		}
+	} else if (direction == "right" || direction == "left") {
+		let i = columns.indexOf(cell.col);
+		if (direction == "right") { i = i+1 } else { i = i-1 }
+		if (!columns[i]) {return}
+		for (const newCell of cell.row.rowCell.children) {
+			if (newCell.col == columns[i]) {
+				newCell.focus();
+				return;
+			}
 		}
 	}
-	return document.createElement("td");
 }
 
-// ADD EVENTS
-
-function addClickEvent_switchVisits(cell, table, row, col) {
-	if (col.type != "lesson" || row.type != "student") { return }
-	const getVisitStatus = () => { return row.options.student.lessons[col.options.date] }
-	const setVisitStatus = (status) => { row.options.student.lessons[col.options.date] = status }
-	cell.addEventListener('dblclick', function() {
-		switch (getVisitStatus()) {
-			case "":
-				setVisitStatus("visit");
-				break;
-			case "visit":
-				setVisitStatus("absent");
-				break;
-			case "absent":
-				setVisitStatus("");
-				break;
-			default:
-				setVisitStatus("");
-				break;
-		}
-		table.tableGenerator.generateTableContent();
-	});
-}
-
-function addClickEvent_changeName(cell, table, row, col) {
-	if (col.type != "name_id" || row.type != "student") { return }
-	const getStudentId = () => { return row.options.student.id }
-	const setStudentId = (id) => { row.options.student.id = id }
-	cell.addEventListener("dblclick", function() {
-		let id = prompt(`Для "${row.options.student.id}"\n"Фамилия Имя"\n`);
-		if (id) {
-			row.options.student.id = id;
-			table.tableGenerator.generateTableContent();
-		}
-	});
-}
-
-// MAIN
-export const functions={
+// MAIN FUNCTIONS
+const functions={
 	generateRowsColumns: generateRowsColumns,
 	createRow: createRow,
 	createCell: createCell
 }
+
+// EXPORT
+export {functions, keyEvent}
 

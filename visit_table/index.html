@@ -66,9 +66,10 @@
 		import { GitHubFile } from "../0_github/github_files.mjs";
 		import { StudentsData } from "../0_parse_data/students_data.js";
 		import { TableGenerator } from "../0_table/tableGenerator.mjs";
-		import { functions } from "./visit_table.mjs";
+		import { functions, keyEvent } from "./visit_table.mjs";
 		
 		window.visitTable = document.getElementById("visitTable");
+		window.visitTable.addEventListener("keydown", keyEvent);
 		window.studentsFile = new GitHubFile("students.json");
 		window.students = new StudentsData(window.studentsFile);
 

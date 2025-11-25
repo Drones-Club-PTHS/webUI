@@ -24,7 +24,7 @@ function cellAction() {
 	const newGitRepoLink = prompt(`Old git_repo_link:\n${this.student["git_repo_link"]}\nNew value:`);
 	if (newGitRepoLink) {
 		this.student["git_repo_link"] = newGitRepoLink;
-		this.innerHTML = `<a href="${row_student["git_repo_link"]}">${row_student["git_repo_link"]}</a>`;;
+		this.innerHTML = `<a href="${this.student["git_repo_link"]}">${this.student["git_repo_link"]}</a>`;
 	}
 }
 

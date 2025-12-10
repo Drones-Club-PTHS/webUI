@@ -5,56 +5,82 @@
 	<meta charset='utf-8'>
 	<title>Drenes club - Manage Logins</title>
 	<meta name='viewport' content='width=device-width, initial-scale=1'>
+	<script src="../clear_localStorage.js"></script>
 	<link rel="stylesheet" href="../0_table/table.css">
-    <style>
-		.table .localStorage {
-			color: green;
+	<style>
+		#main-form {
+			display: grid;
+			grid-template-columns: max-content 1fr;
+			max-width: 30em;
+			gap: 0.3em;
 		}
-		.table .key {
-			font-weight: bold;
+		#main-form > label {
+			padding-right: 0.5em;
+			padding-bottom: 0.5em;
+			vertical-align: top;
+			text-align: right;
 		}
-		.table .loginName {
-			font-size: 1.5em;
-			font-weight: bold;
+		textarea.main-input {
+			resize: none;
+			field-sizing: content;
+		}
+		.main-input {
+			width: auto;
+		}
+		.main-input.edited {
+			background-color: red;
+		}
+		.submit-button {
+			grid-column: 1 / -1;
+			justify-self: center;
 		}
 	</style>
 	<script>
-		function newLogin() {
-			const name = prompt("LoginName\n");
-			if (name) {
-				window.logins.addNewEmptyLogin(name);
+		/* localStorage:
+		github-name
+		github-email
+		github-token
+		*/
+		function onFormSubmit(event) {
+			console.log("submit")
+			event.preventDefault();
+			for (const input of event.target.querySelectorAll(".main-input")) {
+				localStorage.setItem(input.id, input.value);
+				input.classList.remove("edited");
 			}
 		}
-		function clearLocalStorage() {
-			const githubLogins = localStorage.getItem("githubLogins");
-			const githubCurrentLogin = localStorage.getItem("githubCurrentLogin");
-			const githubCurrentLoginJson = localStorage.getItem("githubCurrentLoginJson");
-			localStorage.clear();
-			localStorage.setItem("githubLogins", githubLogins);
-			localStorage.setItem("githubCurrentLogin", githubCurrentLogin);
-			localStorage.setItem("githubCurrentLoginJson", githubCurrentLoginJson);
+		function onInput(event) {
+			if (event.target.value == localStorage.getItem(event.target.id)) {
+				event.target.classList.remove("edited");
+			} else {
+				event.target.classList.add("edited");
+			}
 		}
-		clearLocalStorage();
 	</script>
 </head>
 <body>
-	<button onclick="newLogin()">New Login</button>
-	<button onclick="localStorage.clear()">Clear localStorage</button>
-	<table id="loginsTable" class="table"></table>
-	<script type="module">
-		import { TableGenerator } from "../0_table/tableGenerator.mjs";
-		import { functions } from "./manage_logins_table.mjs";
-		import { GithubLogins } from "./manage_logins.mjs";
-
-		window.logins = new GithubLogins();
-		
-		window.loginsTable = document.getElementById("loginsTable");
-		window.loginsTable.tableGenerator = new TableGenerator(window.logins, functions, window.loginsTable);
-		window.loginsTable.tableGenerator.generateTableContent();
-
-		// window.logins.onUpdate.push(
-		// 	() => { window.loginsTable.tableGenerator.generateTableContent(); }
-		// );
+	<form id="main-form" onsubmit="onFormSubmit(event)"> 
+		<!-- github-name -->
+		<label for="github-name">Name:</label>
+		<input class="main-input" type="text" id="github-name" oninput="onInput(event)">
+		<!-- github-email -->
+		<label for="github-email">Email:</label>
+		<input class="main-input" type="text" id="github-email" oninput="onInput(event)">
+		<!-- github-token -->
+			<label for="github-token">Token:</label>
+		<textarea class="main-input" id="github-token" oninput="onInput(event)"></textarea>
+		<input class="submit-button" type="submit" value="Save">
+	</form>
+	<script>
+		function fillInputs() {
+			const form = document.querySelector("#main-form");
+			for (const input of form.querySelectorAll(".main-input")) {
+				if (localStorage.getItem(input.id)) {
+					input.value = localStorage.getItem(input.id);
+				}
+			}
+		}
+		fillInputs();
 	</script>
 </body>
 

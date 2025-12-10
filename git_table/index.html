@@ -5,7 +5,7 @@
 	<meta charset='utf-8'>
 	<title>Drenes club - Visit table</title>
 	<meta name='viewport' content='width=device-width, initial-scale=1'>
-	<link rel="stylesheet" href="../0_table/table.css">
+	<link rel="stylesheet" href="../src/table.css">
 	<style>
 		#sendGithubStatus {
 			display: inline-block;
@@ -28,24 +28,44 @@
 </head>
 
 <body>
-	<button onclick="sendToGithub()" style="color: red;">Send to GitHub</button>
-	<div id="sendGithubStatus">--</div>
 	<table id="gitTable" class="table"></table>
 	<script type="module">
-		import { GitHubFile } from "../0_github/github_files.mjs";
-		import { StudentsData } from "../0_parse_data/students_data.js";
-		import { TableGenerator } from "../0_table/tableGenerator.mjs";
-		import { functions } from "./git_table.mjs";
+		import config from "../config.json" with { type: "json" };
+		import * as github from "../src/github.js";
+		import { GitTable } from "./git_table.mjs";
+		import { UpdatesHandler } from "../src/updates_handler.js";
 		
-		window.gitTable = document.getElementById("gitTable");
-		window.studentsFile = new GitHubFile("students.json");
-		window.students = new StudentsData(window.studentsFile);
+		window.gitTable = GitTable(document.querySelector("#gitTable"));
 
-		window.studentsFile.fetch()
-			.then(() => {
-				window.gitTable.tableGenerator = new TableGenerator(window.students, functions, document.getElementById("gitTable"));
-				window.gitTable.tableGenerator.generateTableContent();
-			});
+		function getStudentsJson() {
+			return github.getJsonFile(localStorage.getItem("github-token"), config.clubs[parseInt(localStorage.getItem("club-index"))].studentsFileUrl);
+		}
+
+		async function sendDataUpdates(dataUpdates) {
+			return github.updateJsonFile(dataUpdates,
+					config.clubs[parseInt(localStorage.getItem("club-index"))].studentsFileUrl,
+					localStorage.getItem("github-token"),
+					localStorage.getItem("github-name"),
+					localStorage.getItem("github-email"))
+			.then((newJson) => {
+				window.studentsJson = newJson;
+			})
+		}
+
+		function rerender(UIupdates) {
+			getStudentsJson().then(res => {
+				window.stJson = res;
+				window.gitTable.generate(window.stJson);
+				UIupdates.forEach(upd => {upd(table)});
+			})
+		}
+
+		window.updateHandler = new UpdatesHandler(sendDataUpdates, rerender);
+
+		getStudentsJson().then(res => {
+			window.stJson = res;
+			window.gitTable.generate(window.stJson);
+		})
 	</script>
 </body>
 

@@ -5,34 +5,9 @@
 	<meta charset='utf-8'>
 	<title>Drenes club - Tasks table</title>
 	<meta name='viewport' content='width=device-width, initial-scale=1'>
-	<link rel="stylesheet" href="../0_table/table.css">
+	<script src="../src/clear_localStorage.js"></script>
+	<link rel="stylesheet" href="../src/table.css">
 	<script>
-		async function sendToGithub() {
-			const status = document.getElementById("sendGithubStatus");
-			status.innerHTML = "--";
-			const resStudents = await window.studentsFile.commit(true);
-			const resTasks = await window.tasksFile.commit(true);
-			let ok = true;
-			if (!resStudents.commit) {
-				console.error("Commit ERROR", resStudents);
-				ok = false;			
-			}
-			if (!resTasks.commit) {
-				console.error("Commit ERROR", resTasks);
-				ok = false;			
-			}
-			if (ok) {
-				status.innerHTML = "Ok";
-			} else {
-				status.innerHTML = ":(";
-			}	
-		}
-
-		function rerender() {
-			window.studentsTable.tableGenerator.generateTableContent();
-			window.tasksTable.tableGenerator.generateTableContent();
-		}
-
 		function addNewTask() {
 			let id = prompt("Task id:\n");
 			let name = prompt("Task name:\n");
@@ -47,25 +22,13 @@
 			display: inline-block;
 			margin: 1em;
 		}
-		.table td.current_student {
+		.table td.current-student {
 			color: red;
-		}
-		.table td.title {
-			color: red;
-		}
-	</style>
-	<style>
-		#sendGithubStatus {
-			display: inline-block;
-			width: 2em;
 		}
 	</style>
 </head>
 
 <body>
-	<button onclick="sendToGithub()" style="color: red;">Send to GitHub</button>
-	<div id="sendGithubStatus">--</div>
-	<button onclick="rerender()">Rerender tables</button>
 	<button onclick="addNewTask()">New Task</button>
 	<br/>
 	<table id="studentsTable" class="table"></table>
@@ -90,39 +53,55 @@
 		});
 	</script>
 	<script type="module">
-		import { GitHubFile } from "../0_github/github_files.mjs";
-		import { StudentsData } from "../0_parse_data/students_data.js";
-		import { TableGenerator } from "../0_table/tableGenerator.mjs";
-		import * as taskTableFunctions from "./tasks_table.mjs";
-		import * as studentsTableFunctions from "./students_table.mjs";
-		
-		window.tasksTable.addEventListener("click", taskTableFunctions.tableClickEvent);
-		window.tasksTable.addEventListener("keydown", taskTableFunctions.keyEvent);
-		window.studentsTable.addEventListener("click", studentsTableFunctions.tableClickEvent);
-		window.studentsTable.addEventListener("keydown", studentsTableFunctions.keyEvent);
+		import config from "../config.json" with { type: "json" };
+		import * as github from "../src/github.js";
+		import { TasksTable } from "./tasks_table.mjs";
+		import { StudentsTable } from "./students_table.mjs";
+		import { UpdatesHandler } from "../src/updates_handler.js";
 
-		window.studentsFile = new GitHubFile("students.json");
-		window.tasksFile = new GitHubFile("tasks.json");
-		const fetchStudents = window.studentsFile.fetch().then(() => {
-			window.students = new StudentsData(window.studentsFile);
-		})
-		const fetchTasks = window.tasksFile.fetch();
+		window.studentsTable = StudentsTable(document.querySelector("#studentsTable"));
+		window.tasksTable = TasksTable(document.querySelector("#tasksTable"));
 
-		window.data = {
-			currentStudent: undefined,
-			get tasks() { return window.tasksFile.content },
-			get studentsData() { return window.students }
+		function getStudentsJson() {
+			return github.getJsonFile(localStorage.getItem("github-token"), config.clubs[parseInt(localStorage.getItem("club-index"))].studentsFileUrl);
 		}
 
+		function getTasksJson() {
+			return github.getJsonFile(localStorage.getItem("github-token"), config.clubs[parseInt(localStorage.getItem("club-index"))].tasksFileUrl);
+		}
+
+		async function sendDataUpdates(dataUpdates) {
+			return github.updateJsonFile(dataUpdates,
+					config.clubs[parseInt(localStorage.getItem("club-index"))].studentsFileUrl,
+					localStorage.getItem("github-token"),
+					localStorage.getItem("github-name"),
+					localStorage.getItem("github-email"))
+			.then((newJson) => {
+				window.stJson = newJson;
+			})
+		}
+
+		function rerender(UIupdates) {
+			tasksTable.generate(tskJson, currentStudent);
+			studentsTable.generate(stJson, currentStudent);
+			UIupdates.forEach(upd => {
+				if (upd.student.id == currentStudent.id) {
+					upd(tasksTable)
+				}});
+		}
+
+		window.updateHandler = new UpdatesHandler(sendDataUpdates, rerender);
+
 		Promise.all([
-			fetchStudents,
-			fetchTasks
-		]).then((results) => {
-			window.studentsTable.tableGenerator = new TableGenerator(window.data, studentsTableFunctions.functions, window.studentsTable);
-			window.tasksTable.tableGenerator = new TableGenerator(window.data, taskTableFunctions.functions, window.tasksTable);
-			window.studentsTable.tableGenerator.generateTableContent();
-			window.tasksTable.tableGenerator.generateTableContent();
-		});
+			getStudentsJson(),
+			getTasksJson()
+		]).then(res => {
+			const [stJson, tskJson] = res;
+			window.stJson = stJson;
+			window.tskJson = tskJson;
+			window.currentStudent = stJson[0];
+			rerender([])
+		})
 	</script>
 </body>
 

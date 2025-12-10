@@ -6,9 +6,9 @@ function fromBase64(text){
 	return decodeURIComponent(escape(atob(text)));
 }
 
-function getFile(token, filePath) {
+export function fetchFile(token, url) {
 	return fetch(
-		filePath,
+		url,
 		{
 			method: 'GET',
 			headers: {
@@ -21,7 +21,11 @@ function getFile(token, filePath) {
 	.then(res => {res.content = fromBase64(res.content); return res;});
 }
 
-function commitFile(token, name, email, filePath, data, commitMessage, sha=undefined) {
+export function getJsonFile(token, url) {
+	return fetchFile(token, url).then(res => JSON.parse(res.content));
+}
+
+function commitFile(token, name, email, url, data, commitMessage, sha=undefined) {
 	const body = {
 		message: commitMessage,
 		committer: {name: name, email: email},
@@ -31,7 +35,7 @@ function commitFile(token, name, email, filePath, data, commitMessage, sha=undef
 		body["sha"] = sha;
 	}
 	return fetch(
-		filePath,
+		url,
 		{
 			method: 'PUT',
 			headers: {
@@ -45,4 +49,12 @@ function commitFile(token, name, email, filePath, data, commitMessage, sha=undef
 	).then(res => res.json());
 }
 
-export {getFile, commitFile}
+export async function updateJsonFile(dataUpdates, url, token, name, email) {
+	const file = await fetchFile(token, url);
+	const newJson = JSON.parse(file.content);
+	for (const upd of dataUpdates) {
+		upd(newJson);
+	}
+	await commitFile(token, name, email, url, JSON.stringify(newJson, null, 2), "update file", file.sha);
+	return newJson;
+}

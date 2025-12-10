@@ -5,25 +5,22 @@
 	<meta charset='utf-8'>
 	<title>Drenes club - Visit table</title>
 	<meta name='viewport' content='width=device-width, initial-scale=1'>
-	<script src="../src/clear_localStorage.js"></script>
-	<link rel="stylesheet" href="../src/table.css">
+	<script src="./src/clear_localStorage.js"></script>
+	<link rel="stylesheet" href="./src/table.css">
+	<style>
+		.visit-cell {
+			user-select: none; 
+		}
+	</style>
 </head>
 
 <body>
-	<select id="club-selector" onchange="localStorage.setItem('club-index', this.value); window.location.reload();">
-		<option value="0">PTHS</option>
-		<option value="1">Academy</option>
-	</select>
 	<table id="visitTable" class="table"></table>
 	<script type="module">
-		import config from "../config.json" with { type: "json" };
-		import * as github from "../src/github.js";
-		import { VisitTable } from "./visit_table.js";
-		import { UpdatesHandler } from "../src/updates_handler.js";
-
-		window.visitTable = VisitTable(document.querySelector("#visitTable"));
-
-		document.querySelector("#club-selector").value = localStorage.getItem("club-index");
+		import config from "./config.json" with { type: "json" };
+		import * as github from "./src/github.js";
+		import { generateVisitTableContent } from "./test_table.mjs";
+		import { UpdatesHandler } from "./src/updates_handler.js";
 
 		async function sendDataUpdates(dataUpdates) {
 			return github.updateJsonFile(dataUpdates,
@@ -37,13 +34,14 @@
 		}
 
 		function rerender(UIupdates) {
+			const table = document.querySelector("#visitTable");
 			const date = new Date();
 			const dateString = date.toLocaleDateString('ru-RU', {
 				year: "numeric",
 				month: "2-digit",
 				day: "2-digit"
 			})
-			window.visitTable.generate(window.studentsJson, [dateString])
+			generateVisitTableContent(window.studentsJson, table, [dateString]);
 			UIupdates.forEach(upd => {upd(table)});
 		}
 

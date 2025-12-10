@@ -1,46 +1,62 @@
-function generateRowsColumns(table, data) {
-	return {
-		columns: ["N", "name", "status"],
-		rows: ["name", ...data.tasks],
+export function TasksTable(tableElement) {
+	// generate(tskJson, currentStudent)
+	tableElement.generate = generateTasksTableContent.bind(null, tableElement);
+	return tableElement;
+}
+
+function generateTasksTableContent(tableElement, tskJson, currentStudent) {
+	tableElement.jsonData = JSON.parse(JSON.stringify(stJson));
+	tableElement.innerHTML = "";
+	tableElement.append(...rowsGenerator(currentStudent, tskJson));
+}
+
+function* rowsGenerator(currentStudent, tskJson) {
+	// Header
+	let row = document.createElement("tr");
+	row.append(...headerGeneragor(currentStudent));
+	yield row;
+	// Tasks
+	for (const task of tskJson) {
+		row = document.createElement("tr");
+		row.taskId = task.id;
+		row.append(...taskCellsGenerator(task.id, task.name, currentStudent));
+		yield row;
 	}
 }
 
-function createCell(table, data, rows, columns, row_task, col) {
-	const cell = document.createElement("td");
-	cell.data = data;
-	cell.task = row_task;
-	if (row_task == "name") {
-		if (col == "N" || col == "status") { return cell }
-		if (data.currentStudent) {
-			cell.innerHTML = data.currentStudent.id;
-		}
-		cell.classList.add("title");
+function* headerGeneragor(currentStudent) {
+	yield document.createElement("td");
+	let cell = document.createElement("td");
+	cell.innerHTML = currentStudent.id;
+	cell.classList.add("current-student");
+	yield cell;
+	yield document.createElement("td");
+	cell = document.createElement("td");
+	cell.innerHTML = "git";
+	yield cell;
+}
+
+function* taskCellsGenerator(taskId, taskName, currentStudent) {
+	function createCell(innerHTML="") {
+		const cell = document.createElement("td");
+		cell.innerHTML = innerHTML;
+		cell.taskId = taskId;
+		cell.currentStudent = currentStudent;
 		return cell;
 	}
-	if (col == "N") { cell.innerHTML = row_task.id;
-	} else if (col == "name") { cell.innerHTML = row_task.name;
-	} else if (col == "status") {
-		setStatusCellContent(cell);
-		cell.setAttribute('tabindex', '0');
-		cell.classList.add("status");
-		cell.cellAction = cellAction;
-		cell.addEventListener("dblclick", cell.cellAction);
-	}
-	return cell;
+	yield createCell(taskId);
+	yield createCell(taskName);
+	let cell = createCell();
+	if (currentStudent.tasks.includes(taskId)) { cell.innerHTML = "+" }
+	cell.cellAction = taskCellAction;
+	cell.addEventListener("dblclick", cell.cellAction);
+	yield cell;
+	cell = createCell();
+	if (currentStudent.git.includes(taskId)) { cell.innerHTML = "+" }
+	yield cell;
 }
 
-function setStatusCellContent(cell) {
-	if (cell.data.currentStudent == undefined) { cell.innerHTML = ""
-	} else if (cell.data.currentStudent.tasks.includes(cell.task.id)) {
-		if (cell.data.currentStudent.git.includes(cell.task.id)) {
-			cell.innerHTML = "+";
-		} else {
-			cell.innerHTML = "•";
-		}
-	} else {
-		cell.innerHTML = "";
-	}
-}
+// 
 
 function removeValueFromArray(array, value) {
 	const index = array.indexOf(value);
@@ -49,58 +65,46 @@ function removeValueFromArray(array, value) {
 	}
 }
 
-function cellAction() {
-	const student = this.data.currentStudent;
-	const taskId = this.task.id;
-	if (student.tasks.includes(taskId)) {
-		if (student.git.includes(taskId)) {
+function taskCellAction() {
+	const taskId = this.taskId;
+	const currentStudent = this.currentStudent;
+	const currentState = currentStudent.tasks.includes(taskId);
+	
+	function updateTask(student, taskId, currentState){
+		if (currentState) {
 			removeValueFromArray(student.tasks, taskId);
-			removeValueFromArray(student.git, taskId);
 		} else {
-			student.git.push(taskId);
+			student.tasks.push(taskId);
 		}
-	} else {
-		student.tasks.push(taskId);
+	} 
+	function updateData(stJson) {
+		console.log("update data", taskId, currentState)
+		for (const student of stJson) {
+			if (student.id == currentStudent.id) {
+				updateTask(student, taskId, currentState);
+				return
+			}
+		}
 	}
-	setStatusCellContent(this);
-}
-
-// FUNCTIONS OBJECTS
-const functions = {
-	generateRowsColumns: generateRowsColumns,
-	createRow: (table, data, rows, columns, row) => {return document.createElement("tr")},
-	createCell: createCell
-}
-
-// EVENTS
-
-function tableClickEvent(event) {
-	const row = event.target.closest(".table tr");
-	setFocusRow(row);
-}
-
-function keyEvent(event) {
-	console.log(event.key);
-	switch (event.key) {
-		case "Enter": 
-			event.target?.cellAction();
-			break;
-		case "ArrowUp":
-			setFocusRow(getFocusRow().previousElementSibling);
-			break;
-		case "ArrowDown":
-			setFocusRow(getFocusRow().nextElementSibling);
-			break;
+	function updateCell(cell) {
+		updateTask(cell.currentStudent, cell.taskId, currentState)
+		if (currentState) {
+			cell.innerHTML = "";
+		} else {
+			cell.innerHTML = "+";
+		}
+		cell.classList.add("edited");
 	}
-}
+	function updateTable(table) {
+		for (const row of table.children) {
+			if (row.taskId == taskId) {
+				updateCell(row.children[2]);
 
-function getFocusRow() {
-	return document.activeElement.closest(".table tr");
+				return;
+			}
+		}
+	}
+	updateTable.student = currentStudent;
+	updateCell(this);
+	window.updateHandler.addUpdate(updateData, updateTable);
 }
-
-function setFocusRow(row) {
-	row?.querySelector("td.status")?.focus();
-}
-
-// EXPORT
-export {functions, keyEvent, tableClickEvent}

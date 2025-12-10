@@ -16,3 +16,11 @@
 	}
 }
 
+.unselectable {
+	user-select: none; 
+}
+
+.edited {
+	background-color: yellow;
+}
+

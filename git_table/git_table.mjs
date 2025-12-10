@@ -1,39 +1,61 @@
-function generateRowsColumns(table, data) {
-	return {
-		columns: ["student", "git_repo_link"],
-		rows: data.students
+export function GitTable(tableElement) {
+	// generate(tskJson, currentStudent)
+	tableElement.generate = generateGitTableContent.bind(null, tableElement);
+	return tableElement;
+}
+
+function generateGitTableContent(tableElement, stJson) {
+	tableElement.innerHTML = "";
+	tableElement.append(...rowsGenerator(stJson));
+}
+
+function* rowsGenerator(stJson) {
+	let row;
+	for (const student of stJson) {
+		row = document.createElement("tr");
+		row.student = student;
+		row.append(...cellsGenerator(student));
+		yield row;
 	}
 }
 
-function createCell(table, data, rows, columns, row_student, col) {
-	const cell = document.createElement("td");
-	cell.student = row_student;
-	if (col == "student") {
-		cell.innerHTML = row_student.id;
-	} else if (col == "git_repo_link") {
-		if (row_student["git_repo_link"]) {
-			cell.innerHTML = `<a href="${row_student["git_repo_link"]}">${row_student["git_repo_link"]}</a>`;
-		}
-		cell.cellAction = cellAction;
-		cell.addEventListener("dblclick", cell.cellAction);
-	}
-	return cell;
+function* cellsGenerator(student) {
+	let cell = document.createElement("td");
+	cell.innerHTML = student.id;
+	yield cell;
+	cell = document.createElement("td");
+	cell.innerHTML = `<a href="${student["git_repo_link"]}">${student["git_repo_link"]}</a>`;
+	cell.student = student;
+	cell.cellAction = cellAction;
+	cell.addEventListener("dblclick", cell.cellAction);
+	yield cell;
 }
 
 function cellAction() {
-	const newGitRepoLink = prompt(`Old git_repo_link:\n${this.student["git_repo_link"]}\nNew value:`);
+	const student = this.student;
+	const newGitRepoLink = prompt(`Old git_repo_link:\n${student["git_repo_link"]}\nNew value:`);
 	if (newGitRepoLink) {
-		this.student["git_repo_link"] = newGitRepoLink;
-		this.innerHTML = `<a href="${this.student["git_repo_link"]}">${this.student["git_repo_link"]}</a>`;
+		function updateData(stJson) {
+			for (const st of stJson) {
+				if (st.id == student.id) {
+					st["git_repo_link"] = newGitRepoLink;
+					return;
+				}
+			}
+		}
+		function updateCell(cell) {
+			cell.innerHTML = `<a href="${student["git_repo_link"]}">${newGitRepoLink}</a>`;
+			cell.classList.add("edited");
+		}
+		function updateTable(table) {
+			for (const row of table.children) {
+				if (row.student.id == student.id) {
+					updateCell(row.children[1]);
+					return;
+				}
+			}
+		}
+		updateCell(this);
+		window.updateHandler.addUpdate(updateData, updateTable);
 	}
 }
-
-// FUNCTIONS OBJECT
-const functions = {
-	generateRowsColumns: generateRowsColumns,
-	createRow: (table, data, rows, columns, row) => {return document.createElement("tr")},
-	createCell: createCell
-}
-
-// EXPORT
-export {functions}

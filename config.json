@@ -1,0 +1,14 @@
+{
+	"clubs": [
+		{
+			"name": "PTHS",
+			"studentsFileUrl": "https://api.github.com/repos/Drones-Club-PTHS/drones_club_2025__admin/contents/data/students.json",
+			"tasksFileUrl": "https://api.github.com/repos/Drones-Club-PTHS/drones_club_2025__admin/contents/data/tasks.json"
+		},
+		{
+			"name": "Academy",
+			"studentsFileUrl": "https://api.github.com/repos/Drones-Club-PTHS/drones_club_PTHS_2025__admin/contents/data/students.json",
+			"tasksFileUrl": "https://api.github.com/repos/Drones-Club-PTHS/drones_club_PTHS_2025__admin/contents/data/tasks.json"
+		}
+	]
+}

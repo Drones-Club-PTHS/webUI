@@ -28,6 +28,13 @@
 </head>
 
 <body>
+	<select id="club-selector" onchange="localStorage.setItem('club-index', this.value); window.location.reload();">
+		<option value="0">PTHS</option>
+		<option value="1">Academy</option>
+	</select>
+	<script>
+		document.querySelector("#club-selector").value = localStorage.getItem("club-index");
+	</script>
 	<table id="gitTable" class="table"></table>
 	<script type="module">
 		import config from "../config.json" with { type: "json" };
